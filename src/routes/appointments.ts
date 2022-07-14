@@ -1,10 +1,10 @@
 import express, { Router } from 'express';
-import {connectToDatabase} from './connection';
+import DbUtil from '../connection';
 
 const appointmentRoutes: Router = express.Router();
 
 appointmentRoutes.route("/appointments").get(async function (req, res) {
-    const dbConnect = connectToDatabase();
+    const dbConnect = DbUtil.getInstance().getDb();
     
     if (dbConnect) {
         dbConnect
@@ -22,7 +22,7 @@ appointmentRoutes.route("/appointments").get(async function (req, res) {
 
 
 appointmentRoutes.route("/appointments/add").post(function (req, res) {
-    const dbConnect = connectToDatabase();
+    const dbConnect = DbUtil.getInstance().getDb();
     const appointmentDocument = {
         from: req.body.from,
         to: req.body.to,

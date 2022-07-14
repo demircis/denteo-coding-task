@@ -15,36 +15,44 @@ const weeklyAppointments = [
     { from: "2021-01-06T17:30:00", to: "2021-01-06T18:00:00" },
   ];
 
-export function connectToDatabase() {
-    let dbConnection: Db | undefined;
-    client.connect(err => {
-        if (err) throw err;
+export default class DbUtil {
+    private static instance: DbUtil;
+    dbo: Db | undefined;
+
+    private constructor() {}
+
+    static getInstance() {
+        if (!DbUtil.instance) {
+            DbUtil.instance = new DbUtil();
+        }
+        return DbUtil.instance;
+    }
+
+    async connectToDatabase() {
+        await client.connect();
         console.log("Database connected!");
-        dbConnection = client.db("test");
-    })
-    return dbConnection;
-}
+        this.dbo = client.db("test");
+    }
 
-export function createCollection() {
-    client.connect(err => {
-        if (err) throw err;
-        let dbConnection = client.db("test");
-        console.log("Database connected!");
-        dbConnection.createCollection("appointments", function(err, res) {
-            if (err) throw err;
-            console.log("Collection created!");
-        });
-    });
-}
+    createCollection() {
+        if (this.dbo && !this.dbo.collection("appointments")) {
+            this.dbo.createCollection("appointments", function(err, res) {
+                if (err) throw err;
+                console.log("Collection created!");
+            });
+        }
+    }
 
-export function fillExistingAppointments() {
-    client.connect(err => {
-        if (err) throw err;
-        let dbConnection = client.db("test");
-        dbConnection.collection("appointments").insertMany(weeklyAppointments, function(err, res) {
-            if (err) throw err;
-            if (res) console.log("Number of documents inserted: " + res.insertedCount);
-        });
-    })
-}
+    async fillExistingAppointments() {
+        if (this.dbo && this.dbo.collection("appointments") && (await this.dbo.collection("appointments").countDocuments()) == 0) {
+            this.dbo.collection("appointments").insertMany(weeklyAppointments, function(err, res) {
+                if (err) throw err;
+                if (res) console.log("Number of documents inserted: " + res.insertedCount);
+            });
+        }
+    }
 
+    getDb() {
+        return this.dbo;
+    }
+}

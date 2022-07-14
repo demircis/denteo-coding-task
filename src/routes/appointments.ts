@@ -3,7 +3,7 @@ import DbUtil from '../connection';
 
 const appointmentRoutes: Router = express.Router();
 
-appointmentRoutes.route("/appointments").get(async function (req, res) {
+appointmentRoutes.route("/api/appointments").get(async function (req, res) {
     const dbConnect = DbUtil.getInstance().getDb();
     
     if (dbConnect) {
@@ -21,11 +21,11 @@ appointmentRoutes.route("/appointments").get(async function (req, res) {
     });
 
 
-appointmentRoutes.route("/appointments/add").post(function (req, res) {
+appointmentRoutes.route("/api/appointments/add").post(function (req, res) {
     const dbConnect = DbUtil.getInstance().getDb();
     const appointmentDocument = {
         from: req.body.from,
-        to: req.body.to,
+        to: req.body.to
     };
 
     if (dbConnect) {
@@ -33,9 +33,9 @@ appointmentRoutes.route("/appointments/add").post(function (req, res) {
         .collection("appointments")
         .insertOne(appointmentDocument, function (err: any, result: any) {
             if (err) {
-                res.status(400).send("Error inserting matches!");
+                res.status(400).send("Error inserting appointment!");
             } else {
-                if (result) console.log(`Added a new match with id ${result.insertedId}`);
+                if (result) console.log(`Added a new appointment with id ${result.insertedId}`);
                 res.status(204).send();
             }
         });

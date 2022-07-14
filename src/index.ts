@@ -7,7 +7,7 @@ import DbUtil from './connection';
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use('./routes/appointments', appointmentRoutes);
+app.use('/', appointmentRoutes);
 
 app.get('/', (req, res) => {
     res.send('Hello World!')
@@ -21,6 +21,11 @@ async function init() {
     dbUtil.createCollection();
     dbUtil.fillExistingAppointments();
 }
+
+app.use((err: any, req: any, res: any, next: any) => {
+    console.error(err.stack)
+    res.status(500).send('Something broke!')
+  })
 
 app.listen(port, async () => {
     console.log(`Example app listening on port ${port}`);

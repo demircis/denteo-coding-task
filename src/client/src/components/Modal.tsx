@@ -3,7 +3,7 @@ import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import axios from 'axios';
-import { DateTime, Duration, Interval } from 'luxon';
+import { DateTime, Interval } from 'luxon';
 
 const DAY_START = 8;
 const DAY_END = 18;

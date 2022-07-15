@@ -46,29 +46,35 @@ export default class TimeModal extends React.Component<{}, any> {
         const range = searchRange.to.diff(searchRange.from, 'days').toObject().days;
         var possibleSlots = [];
         if (range) {
-            for (let index = 0; index < range; index++) {
-                let day = searchRange.from.plus({days: index});
-                let fromTo = Interval.fromDateTimes(day.plus({hours: DAY_START}), day.plus({hours: LUNCH_START}));
-                possibleSlots.push(fromTo.splitBy(Duration.fromObject({minutes: 30})));
-                fromTo = Interval.fromDateTimes(day.plus({hours: LUNCH_END}), day.plus({hours: DAY_END}));
-                possibleSlots.push(fromTo.splitBy(Duration.fromObject({minutes: 30})));
+            for (let i = 0; i < range; i++) {
+                let day = searchRange.from.plus({days: i});
+                let start;
+                for (start = day.plus({hours: DAY_START}); start <= day.plus({hours: LUNCH_START}).minus({minutes: 30}); start = start.plus({minutes: 15})) {
+                    possibleSlots.push(Interval.fromDateTimes(start, start.plus({minutes: 30})));
+                }
+                for (start = day.plus({hours: LUNCH_END}); start <= day.plus({hours: DAY_END}).minus({minutes: 30}); start = start.plus({minutes: 15})) {
+                    possibleSlots.push(Interval.fromDateTimes(start, start.plus({minutes: 30})));
+                }
             }
         }
-        return possibleSlots.flat();
+        return possibleSlots;
     }
 
     calculateAvailableSlots(appointments: any) {
         var possibleSlots = this.calculatePossibleSlots();
-        console.log(possibleSlots);
         var filterSlots: any = [];
         for (let possible of possibleSlots) {
+            let pushed: boolean = false;
             for (let app of appointments) {
-                if (possible.overlaps(app)) {
+                if (possible.overlaps(app) || possible.engulfs(app)) {
                     filterSlots.push(false);
+                    pushed = true;
                     break;
                 }
             }
-            filterSlots.push(true);
+            if (!pushed) {
+                filterSlots.push(true);
+            }
         }
         var avail = possibleSlots.filter((value: any, index: number) => { return filterSlots[index] === true });
         return avail;
